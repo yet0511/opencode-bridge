@@ -1,6 +1,8 @@
 # OpenCode 免费模型桥接服务
 
-把 **OpenCode Zen 提供的免费模型** 变成一个标准的 API，供任何其他 agent / 工具使用（Claude Code、Cursor、Cline、Continue、Cherry Studio、各种脚本等）。
+把 OpenCode Zen 的请求和响应转换成标准的 OpenAI / Anthropic API 格式，供本机工具做兼容性测试。
+
+> 当前限制：OpenCode 会在服务端限制免费模型只能从 OpenCode 内使用。即使本地已经登录，外部工具也可能收到 `OpenCode's free tier can only be used from within OpenCode`。本桥接不提供额度，也不能保证绕过或改变上游的套餐权限；遇到该错误时应改用 OpenCode 本身，或使用服务商正式开放的 API。
 
 ## 原理
 
@@ -10,21 +12,21 @@ OpenCode 的免费模型有使用限制（只能在 OpenCode 内使用），直�
 OpenCode's free tier can only be used in OpenCode
 ```
 
-本服务自动读取你本机 OpenCode 已登录的凭证，并在请求中补上 OpenCode 所需的会话标识，从而在本地暴露一个标准接口：
+本服务读取你本机 OpenCode 已登录的凭证，并在本地暴露兼容接口：
 
 ```
-你的工具  ──►  本桥接服务(127.0.0.1:8787)  ──►  opencode.ai/zen/v1  ──►  免费模型
+你的工具  ──►  本桥接服务(127.0.0.1:8788)  ──►  opencode.ai/zen/v1  ──►  免费模型
 ```
 
 ## 快速开始
 
 1. 确认电脑已安装 Node.js 和 OpenCode，并且 OpenCode 已登录（桌面端或 `opencode auth login`）。
-2. 双击 `start.bat`，看到 `Listening : http://127.0.0.1:8787` 即启动成功。**保持窗口开启**。
-3. 浏览器或命令行访问 <http://127.0.0.1:8787/health> 检查状态。
+2. 双击 `start.bat`，看到 `Listening : http://127.0.0.1:8788` 即启动成功。**保持窗口开启**。
+3. 浏览器或命令行访问 <http://127.0.0.1:8788/health> 检查状态。
 
 ## 在任意文件夹使用
 
-桥接服务是全局的（监听 `127.0.0.1:8787`），一次启动即可服务所有项目。
+桥接服务是全局的（监听 `127.0.0.1:8788`），一次启动即可服务所有项目。默认使用 8788 是为了避免与 Command Code 代理常用的 8787 冲突。
 
 1. 本目录已加入用户 PATH。**打开一个新的终端窗口**（让 PATH 生效）。
 2. 用 `cd` 进入你的任意项目文件夹，直接运行：
@@ -47,7 +49,7 @@ claude-code
 > 如果提示 `claude-code 不是内部或外部命令`，说明 PATH 尚未生效：请**重开终端**，
 > 或直接使用完整路径 `C:\Users\yet11\Desktop\ai\opencode-bridge\claude-code.bat`。
 
-其他 OpenAI 兼容工具同理，在任何项目中把 Base URL 填 `http://127.0.0.1:8787/v1` 即可。
+其他 OpenAI 兼容工具同理，在任何项目中把 Base URL 填 `http://127.0.0.1:8788/v1` 即可。
 
 ## 让 OpenCode 桌面端 / 桥接走代理
 
@@ -73,7 +75,7 @@ OpenCode（Bun 构建）会读取 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量。
 > 如果你还用了别的直连服务，把它的域名也加进 `NO_PROXY` 即可。
 
 **桥接服务**会自动检测代理是否在线：在线则走代理，离线则自动直连，
-所以代理关闭时桥接也不会报错。访问 `http://127.0.0.1:8787/health` 可看到当前是
+所以代理关闭时桥接也不会报错。访问 `http://127.0.0.1:8788/health` 可看到当前是
 `"proxy": "http://127.0.0.1:7897"` 还是 `"proxy": "direct"`。
 
 **取消代理：**
@@ -116,14 +118,14 @@ OpenCode（Bun 构建）会读取 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量。
 
 ## 用法一：OpenAI 兼容工具
 
-- Base URL：`http://127.0.0.1:8787/v1`
+- Base URL：`http://127.0.0.1:8788/v1`
 - API Key：随便填（例如 `opencode`）
 - 模型：`opencode/deepseek-v4-flash-free`
 
 命令行测试：
 
 ```bash
-curl http://127.0.0.1:8787/v1/chat/completions ^
+curl http://127.0.0.1:8788/v1/chat/completions ^
   -H "Content-Type: application/json" ^
   -d "{\"model\":\"opencode/deepseek-v4-flash-free\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"}]}"
 ```
@@ -154,7 +156,7 @@ claude --settings "C:\Users\yet11\Desktop\ai\opencode-bridge\claude-settings.jso
 ```json
 {
   "env": {
-    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787",
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8788",
     "ANTHROPIC_AUTH_TOKEN": "opencode-bridge",
     "ANTHROPIC_MODEL": "opencode/deepseek-v4-flash-free",
     "ANTHROPIC_SMALL_FAST_MODEL": "opencode/deepseek-v4-flash-free",
@@ -196,7 +198,7 @@ Claude Code 的 `/model` 菜单里只有 `Default / Opus / Sonnet / Haiku` 这�
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `BRIDGE_PORT` | `8787` | 本服务监听端口 |
+| `BRIDGE_PORT` | `8788` | 本服务监听端口 |
 | `BRIDGE_HOST` | `127.0.0.1` | 监听地址（不要对外网开放） |
 | `DEFAULT_MODEL` | `deepseek-v4-flash-free` | 首选模型 |
 | `FALLBACK_MODELS` | `ling-3.0-flash-fin-free,nemotron-3-ultra-free,big-pickle` | 备用模型（逗号分隔，依次重试） |
@@ -206,6 +208,7 @@ Claude Code 的 `/model` 菜单里只有 `Default / Opus / Sonnet / Haiku` 这�
 ## 常见问题
 
 - **提示 `hasKey: false`**：没有找到 OpenCode 凭证。请先登录 OpenCode，或设置 `OPENCODE_ZEN_KEY`。
+- **提示 `OpenCode's free tier can only be used from within OpenCode`**：凭证已读取，但免费套餐拒绝外部客户端。请使用 OpenCode 本身，或改用正式开放的 API；更换本地认证占位值无法解决。
 - **返回 429 / `Model is unavailable` / 空回复**：免费模型被限流或临时不可用。桥接会自动切换备用模型；若仍失败请稍后再试，避免高频并发。
 - **Claude Code 卡住或反复重试**：多为免费模型过载所致，可改用其它免费模型，或稍后再试。
 - **`claude-code` 命令找不到**：重开终端让 PATH 生效，或用完整路径调用。

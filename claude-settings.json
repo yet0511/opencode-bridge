@@ -1,8 +1,7 @@
 {
   "env": {
-    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787",
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8788",
     "ANTHROPIC_AUTH_TOKEN": "opencode-bridge",
-    "ANTHROPIC_API_KEY": "opencode-bridge",
 
     "ANTHROPIC_MODEL": "opencode/muse-spark-1.3-contributor-free",
 

@@ -9,7 +9,8 @@ const crypto = require('crypto');
 
 const ZEN_HOST = process.env.ZEN_HOST || 'opencode.ai';
 const ZEN_PREFIX = process.env.ZEN_PREFIX || '/zen/v1';
-const PORT = parseInt(process.env.BRIDGE_PORT || '8787', 10);
+// Use a separate default from commandcode-proxy, which commonly occupies 8787.
+const PORT = parseInt(process.env.BRIDGE_PORT || '8788', 10);
 const HOST = process.env.BRIDGE_HOST || '127.0.0.1';
 const SESSION_ID = process.env.OPENCODE_SESSION_ID || ('opencode-bridge-' + crypto.randomBytes(8).toString('hex'));
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'deepseek-v4-flash-free';
