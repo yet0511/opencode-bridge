@@ -1,0 +1,19 @@
+# Runtime logs
+*.log
+
+# Local credentials and environment overrides
+.env
+.env.*
+auth.json
+
+# Node.js artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
